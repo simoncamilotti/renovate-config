@@ -1,0 +1,107 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared Renovate preset for simoncamilotti projects",
+  "mode": "full",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "Europe/Paris",
+  "schedule": ["before 9am on monday"],
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "platformAutomerge": false,
+  "automergeType": "pr",
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Majors are reviewed by hand. The major-update label also lets project workflows run their full e2e suite on these PRs only.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["major-update"]
+    },
+    {
+      "description": "Collapse every non-major update into a single automerged PR to keep CI runs low on the self-hosted runners. Branch protection is not available on private repositories (Free plan): Renovate itself waits for green checks (platformAutomerge: false).",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "all non-major",
+      "automerge": true
+    },
+    {
+      "description": "Risky libraries ship breaking changes in minors: kept out of the automerged group and reviewed by hand.",
+      "matchPackageNames": [
+        "@nestjs/core",
+        "@nestjs/common",
+        "prisma",
+        "@prisma/client",
+        "react",
+        "react-dom",
+        "react-router",
+        "next"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "risky libs (manual review)",
+      "automerge": false
+    },
+    {
+      "description": "Every @nx/* package stays on the exact same version as nx.",
+      "matchPackageNames": ["nx", "/^@nx\\//"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "Nx",
+      "prBodyNotes": [
+        ":warning: Nx majors come with migrations: run `pnpm nx migrate latest` then `pnpm nx migrate --run-migrations` instead of merging the version bump alone."
+      ]
+    },
+    {
+      "matchPackageNames": ["/^@nestjs\\//"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "NestJS"
+    },
+    {
+      "matchPackageNames": ["prisma", "/^@prisma\\//"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "Prisma"
+    },
+    {
+      "matchPackageNames": ["react", "react-dom", "/^@types\\/react(-dom)?$/"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "React"
+    },
+    {
+      "matchPackageNames": ["/playwright/"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "Playwright"
+    },
+    {
+      "matchPackageNames": ["typescript", "eslint", "/^@typescript-eslint\\//", "typescript-eslint", "/^eslint-plugin-/", "/^eslint-config-/"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "TypeScript and ESLint"
+    },
+    {
+      "matchPackageNames": ["vite", "vitest", "/^@vitejs\\//", "/^@vitest\\//"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "Vite and Vitest"
+    },
+    {
+      "description": "Local dev images hold persistent data (PostgreSQL, Keycloak): a major is never a drop-in bump.",
+      "matchDatasources": ["docker"],
+      "matchFileNames": ["docker-compose.yml"],
+      "matchUpdateTypes": ["major"],
+      "prBodyNotes": [
+        ":warning: This image stores local dev data. Dump the data before merging and restore it after the upgrade: the new major may not read the old data directory."
+      ]
+    },
+    {
+      "description": "Shared workflows are called by their moving major tag (@v1), never pinned to a SHA.",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["simoncamilotti/shared-workflows"],
+      "pinDigests": false
+    }
+  ]
+}
