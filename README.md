@@ -11,7 +11,8 @@ Dans chaque projet, `renovate.json` à la racine :
 ```json
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>simoncamilotti/renovate-config"]
+  "extends": ["github>simoncamilotti/renovate-config"],
+  "mode": "full"
 }
 ```
 
@@ -20,15 +21,19 @@ installée sur toute l'organisation. Ce dépôt est public : l'application lit l
 droit particulier.
 
 L'organisation est réglée sur **Scan Only** dans le portail Mend : Renovate analyse tous les
-dépôts sans rien y créer. Le preset déclare `"mode": "full"` : seuls les dépôts qui l'étendent
-reçoivent des PR. Un dépôt sans `renovate.json` reste donc silencieux.
+dépôts sans rien y créer. Seul un dépôt dont le `renovate.json` déclare `"mode": "full"` reçoit
+un Dependency Dashboard et des PR.
+
+Le mode est dans le `renovate.json` du projet, **jamais dans ce preset** : Mend applique le
+preset à tous les dépôts, même sans `renovate.json`. Un `"mode": "full"` ici outrepasserait le
+réglage de l'organisation et réveillerait tous les dépôts (#2).
 
 ## Règles
 
 | Sujet | Règle |
 |---|---|
 | Base | `config:recommended`, commits au format Conventional Commits |
-| Planning | Le lundi avant 9 h (Europe/Paris) ; 5 PR ouvertes au plus, 2 par heure |
+| Planning | Le lundi, toute la journée (Europe/Paris) ; 5 PR ouvertes au plus, 2 par heure. Mend passe rarement sur un dépôt peu actif : un créneau de quelques heures était manqué chaque semaine |
 | Délai avant adoption | Une version n'est proposée que 3 jours après sa publication (`minimumReleaseAge`). Le même délai est configuré dans pnpm |
 | Correctifs et mineures | Regroupés dans une seule PR `all non-major`, fusionnée automatiquement après une CI verte |
 | Majeures | Une PR par famille (Nx, NestJS, Prisma, React, Playwright, TypeScript et ESLint, Vite et Vitest), label `major-update`, revue manuelle |
